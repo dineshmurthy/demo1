@@ -1,0 +1,40 @@
+﻿name: DemoAppMessageBoard1
+services:
+- name: backend
+  source_dir: /backend
+  github:
+    repo: dineshmurthy/demo1
+    branch: main
+  run_command: gunicorn --bind 0.0.0.0:$PORT app:app
+  environment_slug: python
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  routes:
+  - path: /api
+  envs:
+  - key: MONGODB_URI
+    scope: RUN_TIME
+    type: SECRET
+  - key: DB_NAME
+    value: demoMDB1
+    scope: RUN_TIME
+  - key: PORT
+    value: "8080"
+    scope: RUN_TIME
+
+- name: frontend
+  source_dir: /frontend
+  github:
+    repo: dineshmurthy/demo1
+    branch: main
+  build_command: npm ci && npm run build
+  run_command: npx serve -s build -l 3000
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  routes:
+  - path: /
+  envs:
+  - key: REACT_APP_API_URL
+    value: ${backend.PUBLIC_URL}/api
+    scope: RUN_TIME
